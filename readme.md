@@ -1,5 +1,5 @@
 ## TODO: ##
-This readme
-Refactor into classes
-Make code not a horrifying monstrosity
-Drink
+
+- Create Socket Class
+- Create Client and Server classes
+- Cry
