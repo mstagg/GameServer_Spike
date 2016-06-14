@@ -23,5 +23,4 @@ private:
 	// Port number 0 - 65535
 	uint16_t port;
 };
-
 #endif

@@ -1,5 +1,15 @@
 #include "Address.h"
 
+/* USE FOR REFERENCE, DELETE AFTER USE
+#include <exception>
+class myexception: public std::exception
+{
+  virtual const char* what() const throw()
+  {
+    return "My exception happened";
+  }
+} myex;
+*/
 // Constructor using 4 component parts of IPv4 address
 Address::Address(uint16_t portNumber, uint8_t ipA, uint8_t ipB, uint8_t ipC, uint8_t ipD)
 {
@@ -13,6 +23,12 @@ Address::Address(uint16_t portNumber, uint8_t ipA, uint8_t ipB, uint8_t ipC, uin
 // Constructor using single IPv4 address
 Address::Address(uint16_t portNumber, uint32_t ip)
 {
+    /* USE FOR REFERENCE, DELETE AFTER USE
+    if(portNumber < 0)
+    {
+        throw myex;
+    }
+    */
 	this->SetPort(portNumber);
 	this->SetIp(ip);
 }
