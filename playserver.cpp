@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
- 
+
 #define PORT 8008
 #define NONBLOCKING 1
 
@@ -17,11 +17,11 @@
     #define OPERATING_SYS UNIX
 #endif
 
-#if PLATFORM == PLATFORM_WINDOWS
+#if OPERATING_SYS == PLATFORM_WINDOWS
     #include <winsock2.h>
     #pragma comment( lib, "wsock32.lib" )
     typedef int32_t socklen_t;
-#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+#else
     #include <sys/socket.h>
     #include <netinet/in.h>
     #include <fcntl.h>
@@ -49,16 +49,16 @@ int main()
     if(InitSockets() < 0)
     {
 		std::cout << "Failed to intialize socket interface." << std::endl;
-		return -1; 
+		return -1;
     }
-    
+
 	// Create socket and check for failure
 	int socketID = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if(socketID < 0)
 	{
 		std::cout << "Failed to intialize socket." << std::endl;
 		return -1;
-	} 
+	}
 
 	// Create socket address
 	sockaddr_in address;
@@ -86,7 +86,7 @@ int main()
 		std::cout << "Failed to set packets to nonblocking." << std::endl;
 		return -1;
 	}
-    
+
 	while ( true )
 	{
 	    unsigned char packet_data[256];
@@ -96,7 +96,7 @@ int main()
 	    sockaddr_in from;
 	    socklen_t fromLength = sizeof(from);
 
-	    int bytes = recvfrom(socketID, (char*)packet_data, max_packet_size, 0, (sockaddr*)&from, &fromLength);  
+	    int bytes = recvfrom(socketID, (char*)packet_data, max_packet_size, 0, (sockaddr*)&from, &fromLength);
 
 	    unsigned int from_address = ntohl( from.sin_addr.s_addr );
 
@@ -115,7 +115,7 @@ int main()
     #else
     close(socketID);
     #endif
-    
+
     ShutdownSockets();
     return 0;
 }

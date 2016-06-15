@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
- 
-#define PORT 8008
+
+#define PORT 8010
 #define NONBLOCKING 1
 
 #define WINDOWS 0
@@ -17,11 +17,11 @@
     #define OPERATING_SYS UNIX
 #endif
 
-#if PLATFORM == PLATFORM_WINDOWS
+#if OPERATING_SYS == PLATFORM_WINDOWS
     #include <winsock2.h>
     #pragma comment( lib, "wsock32.lib" )
     typedef int32_t socklen_t;
-#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+#else
     #include <sys/socket.h>
     #include <netinet/in.h>
     #include <fcntl.h>
@@ -46,21 +46,21 @@ void ShutdownSockets()
 
 int main()
 {
-    
+
     if(InitSockets() < 0)
     {
 		std::cout << "Failed to intialize socket interface." << std::endl;
-		return -1; 
+		return -1;
     }
-    
+
 	// Create socket and check for failure
 	int socketID = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if(socketID < 0)
 	{
 		std::cout << "Failed to intialize socket." << std::endl;
 		return -1;
-	} 
-	
+	}
+
 	// Create socket address
 	sockaddr_in address;
 	address.sin_family = AF_INET;
@@ -87,13 +87,13 @@ int main()
 	    std::cout << "failed to send packet\n" << std::endl;;
 	    return -1;
 	}
-    
+
     #if OPERATING_SYS == WINDOWS
 	closesocket(socketID);
     #else
     close(socketID);
     #endif
-    
+
     ShutdownSockets();
     return 0;
 }
