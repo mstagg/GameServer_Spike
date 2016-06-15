@@ -1,16 +1,57 @@
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <fcntl.h>
  
 #define PORT 8008
 #define NONBLOCKING 1
 
+#define WINDOWS 0
+#define MAC 1
+#define UNIX 2
+
+#if defined(_WIN32)
+    #define OPERATING_SYS WINDOWS
+#elif defined(__APPLE__)
+    #define OPERATING_SYS MAC
+#else
+    #define OPERATING_SYS UNIX
+#endif
+
+#if PLATFORM == PLATFORM_WINDOWS
+    #include <winsock2.h>
+    #pragma comment( lib, "wsock32.lib" )
+    typedef int32_t socklen_t;
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <fcntl.h>
+#endif
+
+int InitSockets()
+{
+    #if OPERATING_SYS == WINDOWS
+    WSADATA WsaData;
+    return WSAStartup( MAKEWORD(2,2), &WsaData ) == NO_ERROR;
+    #else
+    return 0;
+    #endif
+}
+
+void ShutdownSockets()
+{
+    #if OPERATING_SYS == WINDOWS
+    WSACleanup();
+    #endif
+}
 
 int main()
 {
+    if(InitSockets() < 0)
+    {
+		std::cout << "Failed to intialize socket interface." << std::endl;
+		return -1; 
+    }
+    
 	// Create socket and check for failure
 	int socketID = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if(socketID < 0)
@@ -33,14 +74,19 @@ int main()
 		return -1;
 	}
 
-	// Set incoming apckets to nonblocking
+	// Set incoming packets to nonblocking
+    #if OPERATING_SYS == WINDOWS
+    DWORD nonBlocking = 1;
+    int nonblockingStatus = ioctlsocket(socketID, FIONBIO, &nonBlocking);
+    #else
 	int nonblockingStatus = fcntl(socketID, F_SETFL, O_NONBLOCK, NONBLOCKING);
+    #endif
 	if(nonblockingStatus < 0)
 	{
 		std::cout << "Failed to set packets to nonblocking." << std::endl;
 		return -1;
 	}
-
+    
 	while ( true )
 	{
 	    unsigned char packet_data[256];
@@ -64,6 +110,12 @@ int main()
 	    // process received packet
 	}
 
-	close(socketID);
+    #if OPERATING_SYS == WINDOWS
+	closesocket(socketID);
+    #else
+    close(socketID);
+    #endif
+    
+    ShutdownSockets();
     return 0;
 }
